@@ -76,7 +76,11 @@ class OAuthPy():
         if use_headers_auth:
             headers_str_payload = 'OAuth ' + ', '.join(['%s="%s"' % (self.urlquote(k), self.urlquote(params[k])) for k in sorted(params)])
             headers_payload['Authorization'] = headers_str_payload
-            headers_payload['Content-Type'] = 'application/x-www-form-urlencoded'
+
+            # if POST method add urlencoded
+            if request_method == 'POST':
+                headers_payload['Content-Type'] = 'application/x-www-form-urlencoded'
+                
             headers_payload['User-Agent'] = 'HTTP Client'
 
         # request to provider with

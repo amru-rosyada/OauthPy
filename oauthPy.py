@@ -1,6 +1,8 @@
 # oauthpy is implementation of oauth
 # usage :
 # oauth = OAuth(consumer_secret, consumer_key)
+# oauth.request_token() # for request token
+# oauth.do_request() # if you want to implement other request just use this one and wrap arround
 import time
 from base64 import b64encode
 from urllib.parse import quote, parse_qs

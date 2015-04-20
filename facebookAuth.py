@@ -60,5 +60,5 @@ class facebookAuth():
     def percent_quote(self, text):
         return quote(text, '~')
         
-auth = facebookAuth('445723525574647', 'ca3d7a75ff3da989168848ca3cc0ac24')
+auth = facebookAuth('YOUR APP ID', 'YOUR APP SECRET')
 print(auth.request_token('https://graph.facebook.com/oauth/access_token'))

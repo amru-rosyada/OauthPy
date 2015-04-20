@@ -1,6 +1,6 @@
-# oauthpy is implementation of oauth
+# twitterAuth
 # usage :
-# oauth = OAuth(consumer_secret, consumer_key)
+# oauth = TwitterAuth(consumer_secret, consumer_key)
 # oauth.request_token() # for request token
 # oauth.do_request() # if you want to implement other request just use this one and wrap arround
 import time
@@ -10,7 +10,7 @@ from urllib.request import Request, urlopen
 from hmac import new as hmac
 from hashlib import sha1
 
-class OAuthPy():
+class TwitterAuth():
     
     # constructor init parameter is consumer secret and consumer key
     def __init__(self, consumer_secret, consumer_key):
@@ -57,8 +57,8 @@ class OAuthPy():
         # create signing key
         # generate oauth_signature
         # key structure oauth standard is [POST/GET]&url_request&parameter_in_alphabetical_order
-        params_str = '&'.join(['%s=%s' % (self.urlquote(k), self.urlquote(params[k])) for k in sorted(params)])
-        message = '&'.join([request_method, self.urlquote(url_request), self.urlquote(params_str)])
+        params_str = '&'.join(['%s=%s' % (self.percent_quote(k), self.percent_quote(params[k])) for k in sorted(params)])
+        message = '&'.join([request_method, self.percent_quote(url_request), self.percent_quote(params_str)])
 
         # Create a HMAC-SHA1 signature of the message.
         # Concat consumer secret with oauth token secret if token secret available
@@ -69,12 +69,12 @@ class OAuthPy():
         params["oauth_signature"] = digest_base64
 
         # this is parameter should be pash into url_request
-        params_str = '&'.join(['%s=%s' % (self.urlquote(k), self.urlquote(params[k])) for k in sorted(params)])
+        params_str = '&'.join(['%s=%s' % (self.percent_quote(k), self.percent_quote(params[k])) for k in sorted(params)])
 
         # if use_headers_auth
         headers_payload = {}
         if use_headers_auth:
-            headers_str_payload = 'OAuth ' + ', '.join(['%s="%s"' % (self.urlquote(k), self.urlquote(params[k])) for k in sorted(params)])
+            headers_str_payload = 'OAuth ' + ', '.join(['%s="%s"' % (self.percent_quote(k), self.percent_quote(params[k])) for k in sorted(params)])
             headers_payload['Authorization'] = headers_str_payload
 
             # if POST method add urlencoded
@@ -118,13 +118,13 @@ class OAuthPy():
         # default return is None
         return None
 
-    # urlquote
+    # percent_quote
     # quote url as percent quote
-    def urlquote(self, text):
+    def percent_quote(self, text):
         return quote(text, '~')
 
 # testing outh request token
-oauth = OAuthPy('PUT_YOUR_CONSUMER_SECRET', 'PUT_YOUR_CONSUMER_KEY')
+oauth = TwitterAuth('PUT_YOUR_CONSUMER_SECRET', 'PUT_YOUR_CONSUMER_KEY')
 res = oauth.request_token(url_request='https://api.twitter.com/oauth/request_token',
     request_method='POST',
     oauth_callback='http://127.0.0.1:8888/p/authenticate/twitter',

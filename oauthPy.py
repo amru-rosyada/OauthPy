@@ -99,7 +99,7 @@ class OAuthPy():
     # {oauth_token:'', oauth_token_secret:'', oauth_callback_confirmed:''}
     # else return None
     def request_token(self, url_request, oauth_callback, request_method='GET', use_headers_auth=False):
-        res = oauth.do_request(url_request=url_request,
+        res = self.do_request(url_request=url_request,
             request_method=request_method,
             oauth_callback=oauth_callback,
             use_headers_auth=use_headers_auth)

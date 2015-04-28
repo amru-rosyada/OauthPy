@@ -16,6 +16,14 @@ class TwitterAuth():
     def __init__(self, consumer_secret, consumer_key):
         self.consumer_secret = consumer_secret
         self.consumer_key = consumer_key
+        
+        # list of dictionary of twitter rest api url
+        # access via dicionary get will return url of rest api
+        # ex: twitter_rest_api.get('api_authenticate')
+        self.twitter_rest_api = {'api_authenticate':'https://api.twitter.com/oauth/authenticate',
+            'api_request_token':'https://api.twitter.com/oauth/request_token',
+            'api_access_token':'https://api.twitter.com/oauth/access_token',
+            'api_statuses_user_timeline':'https://api.twitter.com/1.1/statuses/user_timeline.json'}
 
     # parameter
     # url_request : api url for request ex https://api.twitter.com/oauth/request_token
@@ -63,12 +71,13 @@ class TwitterAuth():
         # Create a HMAC-SHA1 signature of the message.
         # Concat consumer secret with oauth token secret if token secret available
         # if token secret not available it's mean request token and token secret
-        key = '%s&%s' % (self.consumer_secret, oauth_token_secret) # Note compulsory "&".
+        key = '%s&%s' % (self.percent_quote(self.consumer_secret), self.percent_quote(oauth_token_secret)) # Note compulsory "&".
+        print(key)
         signature = hmac(key.encode('UTF-8'), message.encode('UTF-8'), sha1)
         digest_base64 = b64encode(signature.digest()).decode('UTF-8')
         params["oauth_signature"] = digest_base64
 
-        # this is parameter should be pash into url_request
+        # this is parameter should be pass into url_request
         params_str = '&'.join(['%s=%s' % (self.percent_quote(k), self.percent_quote(params[k])) for k in sorted(params)])
 
         # if use_headers_auth
@@ -90,19 +99,17 @@ class TwitterAuth():
             res = urlopen(req)
             return res.readall()
         except Exception as e:
+            print(e)
             return None
 
     # simplify request token
     # get request token
-    # depend on do_request method
-    # if request success will return
-    # {oauth_token:'', oauth_token_secret:'', oauth_callback_confirmed:''}
-    # else return None
-    def request_token(self, url_request, oauth_callback, request_method='GET', use_headers_auth=False):
-        res = self.do_request(url_request=url_request,
-            request_method=request_method,
+    # required oauth_callback
+    def request_token(self, oauth_callback):
+        res = self.do_request(url_request=self.twitter_rest_api.get('api_request_token'),
+            request_method='POST',
             oauth_callback=oauth_callback,
-            use_headers_auth=use_headers_auth)
+            use_headers_auth=True)
 
         # mapping to dictionary
         # return result as dictioanary
@@ -118,15 +125,67 @@ class TwitterAuth():
         # default return is None
         return None
 
+    # request authentication url
+    # requred parameter is oauth_token
+    # will return request_auth_url for granting permission
+    def request_auth_url(self, oauth_token):
+        if oauth_token:
+            return '?'.join((self.twitter_rest_api.get('api_authenticate'), '='.join(('oauth_token', self.percent_quote(oauth_token)))))
+            
+        # default value is None
+        return None
+        
+    # request access token
+    # parameter oauth_verifier and oauth_token is required 
+    def request_access_token(self, oauth_token, oauth_verifier):
+        if oauth_token and oauth_verifier:
+            res = self.do_request(url_request=self.twitter_rest_api.get('api_access_token'),
+                request_method='POST',
+                oauth_token=oauth_token,
+                oauth_token_secret='',
+                oauth_callback='',
+                use_headers_auth=True,
+                additional_params={'oauth_verifier':oauth_verifier})
+                
+            # mapping to dictionary
+            # return result as dictioanary
+            if res:
+                res = parse_qs(res.decode('UTF-8'))
+                data_out = {}
+                for k in res:
+                    data_out[k] = res[k][0]
+    
+                return data_out
+                
+        # default return none
+        return None
+        
+    # get statuses user timeline
+    # Returns a collection of the most recent Tweets posted by the user indicated by the screen_name or user_id parameters.
+    # optional params={'user_id':'117257387', 'screen_name':'_mru_', 'since_id':'',
+    #   'count':'', 'max_id':'', 'trim_user':'', 'exclude_replies':'', 'contributor_details':'', 'include_rts':''}
+    # oauth_token and oauth_token_secret is required
+    def request_statuses_user_timeline(self, oauth_token, oauth_token_secret, params={}):
+        
+        res = self.do_request(url_request=self.twitter_rest_api.get('api_statuses_user_timeline'),
+                request_method='GET',
+                oauth_token=oauth_token,
+                oauth_token_secret=oauth_token_secret,
+                oauth_callback='',
+                use_headers_auth=True,
+                additional_params=params)
+                
+        return res
+
     # percent_quote
     # quote url as percent quote
     def percent_quote(self, text):
         return quote(text, '~')
 
 # testing outh request token
-oauth = TwitterAuth('PUT_YOUR_CONSUMER_SECRET', 'PUT_YOUR_CONSUMER_KEY')
-res = oauth.request_token(url_request='https://api.twitter.com/oauth/request_token',
-    request_method='POST',
-    oauth_callback='http://127.0.0.1:8888/p/authenticate/twitter',
-    use_headers_auth=True)
-print(res)
+oauth = TwitterAuth('YOUR CONSUMER SECRET', 'YOUR CONSUMER KEY')
+#res = oauth.request_token(oauth_callback='http://127.0.0.1:8888/p/authenticate/twitter')
+#print(oauth.request_auth_url(res.get('oauth_token')))
+#oauth_token=KYo6CvkJfY7lFAvezEyb0OzThyFI2Dx5&oauth_verifier=JD72yzulrPqhT0FKfE70g14eNCIeHKfW
+access_token = oauth.request_access_token('KYo6CvkJfY7lFAvezEyb0OzThyFI2Dx5', 'JD72yzulrPqhT0FKfE70g14eNCIeHKfW')
+print(oauth.request_statuses_user_timeline(access_token['oauth_token'], access_token['oauth_token_secret']))

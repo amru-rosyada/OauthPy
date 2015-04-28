@@ -124,7 +124,7 @@ class TumblrAuth():
         return quote(text, '~')
 
 # testing outh request token
-oauth = TumblrAuth('fcbkBtNBjHRcuQGPKBK4tKObbUI5tWJYGdKnM5CiIFnduxypAn', 'ptgrHOFw6EP6JUjF8MrOWhRmkMKFyUCYs45duKrJ31rqmGZMB8')
+oauth = TumblrAuth('YOUR SECRET KEY', 'YOUR SECRET CONSUMER KEY')
 res = oauth.request_token(url_request='http://www.tumblr.com/oauth/request_token',
     request_method='POST',
     oauth_callback='http://localhost:8888/p/authenticate/tumblr',

@@ -66,5 +66,5 @@ class GoogleAuth():
     def percent_quote(self, text):
         return quote(text, '~')
         
-auth = GoogleAuth('YOUR CLIENT ID', 'YOUR CLIENT SECRET')
+auth = GoogleAuth('YOUR CLIENT SECRET', 'YOUR CLIENT ID')
 print(auth.request_auth_url('https://accounts.google.com/o/oauth2/auth', 'http://localhost:8888/p/authenticate/google'))

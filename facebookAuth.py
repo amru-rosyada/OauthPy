@@ -14,7 +14,7 @@ class facebookAuth():
     
     # constuctor
     # param is app_id and app_secret from facebook
-    def __init__(self, app_id, app_secret):
+    def __init__(self, app_secret, app_id):
         # for non standard oauth like facebook
         self.app_id = app_id
         self.app_secret = app_secret
@@ -60,5 +60,5 @@ class facebookAuth():
     def percent_quote(self, text):
         return quote(text, '~')
         
-auth = facebookAuth('YOUR APP ID', 'YOUR APP SECRET')
+auth = facebookAuth('YOUR APP SECRET', 'YOUR APP ID')
 print(auth.request_token('https://graph.facebook.com/oauth/access_token'))
